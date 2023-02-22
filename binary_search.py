@@ -6,13 +6,14 @@ It's really easy to have off-by-1 errors in these problems.
 Pay very close attention to your list indexes and your < vs <= operators.
 '''
 
+
 def find_smallest_positive(xs):
     '''
     Assume that xs is a list of numbers sorted from LOWEST to HIGHEST.
     Find the index of the smallest positive number.
     If no such index exists, return `None`.
 
-    HINT: 
+    HINT:
     This is essentially the binary search algorithm from class,
     but you're always searching for 0.
 
@@ -27,6 +28,78 @@ def find_smallest_positive(xs):
     True
     '''
 
+    if len(xs) == 0:
+        return None
+
+    def go(left, right):
+        if left == right:
+            if xs[left] > 0:
+                return left
+            else:
+                return None
+        mid = (left + right) // 2
+        if xs[mid] > 0:
+            right = mid
+        if xs[mid] < 0:
+            left = mid + 1
+        if xs[mid] == 0:
+            left = mid + 1
+            return left
+        return go(left, right)
+
+    return go(0, len(xs) - 1)
+
+
+def lower_index(xs, x):
+    if len(xs) == 0:
+        return None
+    if xs[0] == x:
+        return 0
+
+    def go(left, right):
+        if left == right:
+            if xs[left] >= x:
+                return left
+            else:
+                return None
+        mid = (left + right) // 2
+        if xs[mid] < x + 1:
+            right = mid
+        if xs[mid] > x + 1:
+            left = mid + 1
+        if xs[mid] == x + 1:
+            left = mid + 1
+        return go(left, right)
+
+    return go(0, len(xs) - 1)
+
+
+def higher_index(xs, x):
+    if len(xs) == 0:
+        return None
+    if xs[-1] == x:
+        return len(xs)
+
+    def go(left, right):
+        if left == right:
+            if xs[left] < x:
+                return left
+            else:
+                if left == len(xs) - 1 and xs[left] == x:
+                    return left + 1
+                else:
+                    return None
+        mid = (left + right) // 2
+        if xs[mid] < x:
+            right = mid
+        if xs[mid] > x:
+            left = mid + 1
+        if xs[mid] == x:
+            left = mid + 1
+        return go(left, right)
+
+    return go(0, len(xs) - 1)
+
 
 def count_repeats(xs, x):
     '''
@@ -34,9 +107,9 @@ def count_repeats(xs, x):
     and that x is a number.
     Calculate the number of times that x occurs in xs.
 
-    HINT: 
+    HINT:
     Use the following three step procedure:
-        1) use binary search to find the lowest index with a value >= x
+        1) use binary search to find the lowest index with a value = x
         2) use binary search to find the lowest index with a value < x
         3) return the difference between step 1 and 2
     I highly recommend creating stand-alone functions for steps 1 and 2,
@@ -52,6 +125,12 @@ def count_repeats(xs, x):
     >>> count_repeats([3, 2, 1], 4)
     0
     '''
+    higher = higher_index(xs, x)
+    lower = lower_index(xs, x)
+    if higher is None or lower is None:
+        return 0
+    else:
+        return higher - lower
 
 
 def argmin(f, lo, hi, epsilon=1e-3):
@@ -66,7 +145,7 @@ def argmin(f, lo, hi, epsilon=1e-3):
         2) For each recursive call:
             a) select two points m1 and m2 that are between lo and hi
             b) one of the 4 points (lo,m1,m2,hi) must be the smallest;
-               depending on which one is the smallest, 
+               depending on which one is the smallest,
                you recursively call your function on the interval [lo,m2] or [m1,hi]
 
     APPLICATION:
@@ -88,10 +167,20 @@ def argmin(f, lo, hi, epsilon=1e-3):
     -0.00016935087808430278
     '''
 
+    if hi - lo < epsilon:
+        return (lo + hi)/2
+    else:
+        m1 = lo + (hi - lo)/3
+        m2 = hi - (hi - lo)/3
+        if f(m1) < f(m2):
+            return argmin(f, lo, m2, epsilon)
+        else:
+            return argmin(f, m1, hi, epsilon)
 
 ################################################################################
 # the functions below are extra credit
 ################################################################################
+
 
 def find_boundaries(f):
     '''
